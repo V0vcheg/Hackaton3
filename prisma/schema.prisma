@@ -21,4 +21,15 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   password  String?
+  passwordEntries PasswordEntry[]
+}
+
+model PasswordEntry {
+  id          String  @id @default(uuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  iniVector   String  @db.VarChar(16)
+  cipherData  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
