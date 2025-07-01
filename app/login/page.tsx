@@ -1,4 +1,4 @@
-import {api} from "@/libs/api";
+import {api} from "@/lib/api";
 
 export default async function LoginPage() {
     const test = await api('/api/auth', 'GET')
