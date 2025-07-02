@@ -35,9 +35,9 @@ export default function UnsavedChangesModal({
       />
       
       {/* Modal */}
-      <div className="relative bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden">
-        {/* Header avec gradient LinkESTIAM */}
-        <div className="bg-gradient-to-r from-purple-600 to-violet-600 px-6 py-4">
+      <div className="relative bg-white dark:bg-[#1A1A22] rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden border border-[#E5E5EA] dark:border-[#333333]">
+        {/* Header avec couleur LinkESTIAM */}
+        <div className="px-6 py-4" style={{ backgroundColor: '#8C2CFF' }}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-white" />
@@ -50,7 +50,7 @@ export default function UnsavedChangesModal({
 
         {/* Contenu */}
         <div className="p-6">
-          <p className="text-gray-700 dark:text-gray-300 text-base leading-relaxed mb-6">
+          <p className="text-[#222222] dark:text-[#F0F0F5] text-base leading-relaxed mb-6">
             {t('unsavedChangesMessage')}
           </p>
 
@@ -60,7 +60,21 @@ export default function UnsavedChangesModal({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="w-full bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-700 hover:to-violet-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+              className="w-full text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              style={{ 
+                backgroundColor: '#8C2CFF',
+                '&:hover': { backgroundColor: '#6B1FB3' }
+              }}
+              onMouseEnter={(e) => {
+                if (!saving) {
+                  e.currentTarget.style.backgroundColor = '#6B1FB3'
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!saving) {
+                  e.currentTarget.style.backgroundColor = '#8C2CFF'
+                }
+              }}
             >
               <Save className="w-4 h-4" />
               {saving ? t('saving') : t('saveAndContinue')}
@@ -70,7 +84,7 @@ export default function UnsavedChangesModal({
             <button
               onClick={onDiscard}
               disabled={saving}
-              className="w-full bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 disabled:opacity-50 text-gray-800 dark:text-gray-200 font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+              className="w-full bg-[#F8F7FB] hover:bg-[#E5E5EA] dark:bg-[#2A2A38] dark:hover:bg-[#333333] disabled:opacity-50 text-[#222222] dark:text-[#F0F0F5] font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 border border-[#E5E5EA] dark:border-[#333333]"
             >
               <X className="w-4 h-4" />
               {t('discardAndContinue')}
@@ -80,7 +94,7 @@ export default function UnsavedChangesModal({
             <button
               onClick={onCancel}
               disabled={saving}
-              className="w-full bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-50 text-gray-600 dark:text-gray-400 font-medium py-3 px-4 rounded-xl transition-all duration-200"
+              className="w-full bg-transparent hover:bg-[#F8F7FB] dark:hover:bg-[#2A2A38] disabled:opacity-50 text-[#6D6D85] font-medium py-3 px-4 rounded-xl transition-all duration-200"
             >
               {t('cancel')}
             </button>

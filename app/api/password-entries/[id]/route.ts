@@ -13,7 +13,7 @@ import { prisma } from "@/lib/prisma";
  * @remarks
  * Authentication with JWT is required to ensure users can only edit password entries for themselves.
  */
-export async function PUT(request: Request, ctx: { params: { id: string } }) {
+export async function PUT(request: Request, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
   const { userId, iniVector, cipherData } = await request.json();
 
@@ -63,7 +63,7 @@ export async function PUT(request: Request, ctx: { params: { id: string } }) {
  */
 export async function DELETE(
   request: Request,
-  ctx: { params: { id: string } }
+  ctx: { params: Promise<{ id: string }> }
 ) {
   const { id } = await ctx.params;
   const { userId } = await request.json();

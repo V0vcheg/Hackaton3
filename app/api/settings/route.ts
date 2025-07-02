@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Pour l'instant, les paramètres sont stockés localement
 // Dans une vraie application, ils seraient dans la base de données
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     // TODO: Récupérer les paramètres depuis la base de données
     const settings = {
@@ -28,7 +28,7 @@ export async function PUT(request: NextRequest) {
     const { notifications, darkMode, language, theme } = body
 
     // TODO: Sauvegarder les paramètres dans la base de données
-    console.log('Paramètres mis à jour:', { notifications, darkMode, language, theme })
+    // Paramètres mis à jour avec succès
 
     return NextResponse.json({
       message: 'Paramètres mis à jour avec succès',

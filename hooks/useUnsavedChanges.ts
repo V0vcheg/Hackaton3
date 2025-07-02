@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useCallback, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
 
 interface UseUnsavedChangesOptions {
   hasUnsavedChanges: boolean
@@ -10,8 +9,6 @@ interface UseUnsavedChangesOptions {
 }
 
 export function useUnsavedChanges({ hasUnsavedChanges, onSave, message }: UseUnsavedChangesOptions) {
-  const router = useRouter()
-  const pathname = usePathname()
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null)
   const [showModal, setShowModal] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -24,13 +21,14 @@ export function useUnsavedChanges({ hasUnsavedChanges, onSave, message }: UseUns
     }
   }, [hasUnsavedChanges, message])
 
-  const handleNavigationAttempt = useCallback((navigationFn: () => void) => {
+  // Fonction pour vérifier les modifications (appelée par la sidebar)
+  const checkUnsavedChanges = useCallback(async (): Promise<boolean> => {
     if (hasUnsavedChanges) {
-      setPendingNavigation(() => navigationFn)
-      setShowModal(true)
-      return false
+      return new Promise((resolve) => {
+        setPendingNavigation(() => () => resolve(true))
+        setShowModal(true)
+      })
     }
-    navigationFn()
     return true
   }, [hasUnsavedChanges])
 
@@ -40,8 +38,10 @@ export function useUnsavedChanges({ hasUnsavedChanges, onSave, message }: UseUns
       await onSave()
       setShowModal(false)
       if (pendingNavigation) {
-        pendingNavigation()
-        setPendingNavigation(null)
+        setTimeout(() => {
+          pendingNavigation()
+          setPendingNavigation(null)
+        }, 100)
       }
     } catch (error) {
       console.error('Erreur lors de la sauvegarde:', error)
@@ -52,13 +52,12 @@ export function useUnsavedChanges({ hasUnsavedChanges, onSave, message }: UseUns
 
   const handleDiscardAndContinue = useCallback(() => {
     setShowModal(false)
-    // Utiliser setTimeout pour s'assurer que la modal se ferme avant la navigation
-    setTimeout(() => {
-      if (pendingNavigation) {
+    if (pendingNavigation) {
+      setTimeout(() => {
         pendingNavigation()
         setPendingNavigation(null)
-      }
-    }, 100)
+      }, 100)
+    }
   }, [pendingNavigation])
 
   const handleCancel = useCallback(() => {
@@ -66,113 +65,23 @@ export function useUnsavedChanges({ hasUnsavedChanges, onSave, message }: UseUns
     setPendingNavigation(null)
   }, [])
 
+  // Enregistrer la fonction globalement
   useEffect(() => {
-    // Protection fermeture de page/onglet
-    window.addEventListener('beforeunload', handleBeforeUnload)
-
-         // Protection navigation par liens
-     const handleClick = (e: Event) => {
-       const target = e.target as HTMLElement
-       const link = target.closest('a')
-       
-       if (link && hasUnsavedChanges) {
-         const href = link.getAttribute('href')
-         if (href && href !== pathname && (href.startsWith('/') || href.startsWith('#'))) {
-           e.preventDefault()
-           e.stopPropagation()
-           handleNavigationAttempt(() => {
-             window.location.href = href
-           })
-           return false
-         }
-       }
-     }
-
-     // Protection navigation par boutons (uniquement pour navigation externe)
-     const handleButtonClick = (e: Event) => {
-       const target = e.target as HTMLElement
-       const button = target.closest('button')
-       
-       if (button && hasUnsavedChanges) {
-         // Vérifier si c'est un bouton de navigation externe (ProfileButton)
-         const isExternalNavigationButton = button.className.includes('profile-button') ||
-                                           button.getAttribute('data-navigation') === 'true'
-         
-         // Exclure les boutons internes de changement d'onglet
-         const isInternalTabButton = button.textContent?.includes('Profil') ||
-                                   button.textContent?.includes('Profile') ||
-                                   button.textContent?.includes('Settings') ||
-                                   button.textContent?.includes('Paramètres')
-         
-         if (isExternalNavigationButton && !isInternalTabButton) {
-           e.preventDefault()
-           e.stopPropagation()
-           // Pour ProfileButton, naviguer vers /profile
-           handleNavigationAttempt(() => {
-             window.location.href = '/profile'
-           })
-           return false
-         }
-       }
-     }
-
-    // Écouter les clics sur toute la page
-    document.addEventListener('click', handleClick, { capture: true })
-    document.addEventListener('click', handleButtonClick, { capture: true })
-
-         return () => {
-       window.removeEventListener('beforeunload', handleBeforeUnload)
-       document.removeEventListener('click', handleClick, { capture: true })
-       document.removeEventListener('click', handleButtonClick, { capture: true })
-     }
-   }, [hasUnsavedChanges, message, pathname, handleBeforeUnload, handleNavigationAttempt])
-
-  // Protection pour les changements de route programmatiques
-  useEffect(() => {
-    const originalPush = router.push
-    const originalReplace = router.replace
-    const originalBack = router.back
-    const originalForward = router.forward
-
-         router.push = (href: string, options?: any) => {
-       if (hasUnsavedChanges && href !== pathname) {
-         handleNavigationAttempt(() => originalPush(href, options))
-         return Promise.resolve()
-       }
-       return originalPush(href, options)
-     }
-
-     router.replace = (href: string, options?: any) => {
-       if (hasUnsavedChanges && href !== pathname) {
-         handleNavigationAttempt(() => originalReplace(href, options))
-         return Promise.resolve()
-       }
-       return originalReplace(href, options)
-     }
-
-     router.back = () => {
-       if (hasUnsavedChanges) {
-         handleNavigationAttempt(() => originalBack())
-         return
-       }
-       return originalBack()
-     }
-
-     router.forward = () => {
-       if (hasUnsavedChanges) {
-         handleNavigationAttempt(() => originalForward())
-         return
-       }
-       return originalForward()
-     }
-
+    window.checkUnsavedChanges = checkUnsavedChanges
+    
     return () => {
-      router.push = originalPush
-      router.replace = originalReplace
-      router.back = originalBack
-      router.forward = originalForward
+      window.checkUnsavedChanges = undefined
     }
-       }, [hasUnsavedChanges, pathname, router, handleNavigationAttempt])
+  }, [checkUnsavedChanges])
+
+  // Protection fermeture de page/onglet
+  useEffect(() => {
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+    }
+  }, [handleBeforeUnload])
 
   return {
     showModal,

@@ -1,23 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { User, Settings, ChevronRight, Trash2, Eye, EyeOff, Camera } from 'lucide-react'
+import { User, Trash2, Eye, EyeOff, Camera, Mail, BadgeCheck, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { useLanguage } from '@/hooks/useLanguage'
-import { useDarkMode } from '@/hooks/useDarkMode'
-import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
 import { useToast } from '@/hooks/useToast'
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges'
+import DeleteAccountDialog from '@/components/DeleteAccountDialog'
 import UnsavedChangesModal from '@/components/UnsavedChangesModal'
 
 export default function ProfilePage() {
-  const { t, language, setLanguage } = useLanguage()
-  const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const { t } = useLanguage()
   const { showSuccess, showError } = useToast()
   
-  const [activeTab, setActiveTab] = useState('profile')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
@@ -26,7 +26,6 @@ export default function ProfilePage() {
     lastName: '',
     email: '',
     newPassword: '',
-    notifications: true,
     profilePicture: null as File | null
   })
   const [formData, setFormData] = useState({
@@ -34,14 +33,12 @@ export default function ProfilePage() {
     lastName: '',
     email: '',
     newPassword: '',
-    notifications: true,
     profilePicture: null as File | null
   })
 
   // Charger les données au montage du composant
   useEffect(() => {
     loadProfileData()
-    loadSettings()
   }, [])
 
   const loadProfileData = async () => {
@@ -54,7 +51,6 @@ export default function ProfilePage() {
           lastName: userData.lastName || '',
           email: userData.email || '',
           newPassword: '',
-          notifications: userData.notifications || true,
           profilePicture: null as File | null
         }
         setFormData(profileData)
@@ -66,40 +62,22 @@ export default function ProfilePage() {
     }
   }
 
-  const loadSettings = async () => {
-    try {
-      const response = await fetch('/api/settings')
-      if (response.ok) {
-        const settings = await response.json()
-        // Synchroniser avec les hooks
-        if (settings.notifications !== formData.notifications) {
-          setFormData(prev => ({ ...prev, notifications: settings.notifications }))
-        }
-      }
-    } catch (error) {
-      console.error('Erreur lors du chargement des paramètres:', error)
-    }
-  }
-
-  const handleInputChange = (field: string, value: string | boolean | File | null) => {
+  const handleInputChange = (field: string, value: string | File | null) => {
     const newFormData = { ...formData, [field]: value }
     setFormData(newFormData)
     
-    // Détecter les changements en excluant newPassword vide et profilePicture
+    // Détecter les changements
     const dataToCompare = {
       firstName: newFormData.firstName,
       lastName: newFormData.lastName,
       email: newFormData.email,
-      notifications: newFormData.notifications
     }
     const originalToCompare = {
       firstName: originalData.firstName,
       lastName: originalData.lastName,
       email: originalData.email,
-      notifications: originalData.notifications
     }
     
-    // Ajouter le nouveau mot de passe seulement s'il n'est pas vide
     const hasPasswordChange = newFormData.newPassword.trim() !== ''
     const hasChanges = JSON.stringify(dataToCompare) !== JSON.stringify(originalToCompare) || hasPasswordChange
     
@@ -132,7 +110,6 @@ export default function ProfilePage() {
       if (response.ok) {
         showSuccess(t('profileUpdated'))
         
-        // Récupérer les nouvelles données depuis la réponse
         const responseData = await response.json()
         const userFromResponse = responseData.user || responseData
         
@@ -140,8 +117,7 @@ export default function ProfilePage() {
           firstName: userFromResponse.firstName || formData.firstName,
           lastName: userFromResponse.lastName || formData.lastName,
           email: userFromResponse.email || formData.email,
-          newPassword: '', // Toujours vider le mot de passe après sauvegarde
-          notifications: formData.notifications,
+          newPassword: '',
           profilePicture: formData.profilePicture
         }
         
@@ -160,55 +136,15 @@ export default function ProfilePage() {
     }
   }
 
-  
-
-  // État pour la modal de changement d'onglet
   const [pendingTab, setPendingTab] = useState<string | null>(null)
   const [showTabModal, setShowTabModal] = useState(false)
 
-  // Protection contre sortie sans sauvegarde
-  const { showModal, saving: modalSaving, handleSaveAndContinue, handleDiscardAndContinue, handleCancel } = useUnsavedChanges({
+  // Hook pour la gestion des modifications non sauvegardées
+  const unsavedChangesModal = useUnsavedChanges({
     hasUnsavedChanges,
     onSave: handleSave,
     message: t('unsavedChanges')
   })
-
-  // Gestion du changement d'onglet avec protection
-  const handleTabChange = (newTab: string) => {
-    if (hasUnsavedChanges) {
-      setPendingTab(newTab)
-      setShowTabModal(true)
-    } else {
-      setActiveTab(newTab)
-    }
-  }
-
-  const handleTabSaveAndContinue = async () => {
-    try {
-      await handleSave()
-      setShowTabModal(false)
-      if (pendingTab) {
-        setActiveTab(pendingTab)
-        setPendingTab(null)
-      }
-    } catch {
-      // L'erreur est déjà gérée dans handleSave
-    }
-  }
-
-  const handleTabDiscardAndContinue = () => {
-    setShowTabModal(false)
-    if (pendingTab) {
-      setActiveTab(pendingTab)
-      setPendingTab(null)
-      setHasUnsavedChanges(false)
-    }
-  }
-
-  const handleTabCancel = () => {
-    setShowTabModal(false)
-    setPendingTab(null)
-  }
 
   const handleDeleteAccount = async () => {
     // Utiliser une confirmation personnalisée au lieu de confirm()
@@ -220,35 +156,37 @@ export default function ProfilePage() {
           method: 'DELETE'
         })
 
-        if (response.ok) {
-          showSuccess(t('accountDeleted'))
-          setTimeout(() => {
-            window.location.href = '/login'
-          }, 2000)
-        } else {
-          const error = await response.json()
-          showError('Erreur', error.error || 'Erreur lors de la suppression du compte')
-        }
-      } catch (error) {
-        console.error('Erreur lors de la suppression:', error)
-        showError('Erreur', 'Erreur lors de la suppression du compte')
-      } finally {
-        setLoading(false)
+          if (response.ok) {
+            showSuccess(t('accountDeleted'))
+            setTimeout(() => {
+              window.location.href = '/login'
+            }, 2000)
+          } else {
+            const error = await response.json()
+            showError('Erreur', error.error || 'Erreur lors de la suppression du compte')
+          }
+        } catch (error) {
+          console.error('Erreur lors de la suppression:', error)
+          showError('Erreur', 'Erreur lors de la suppression du compte')
+        } finally {
+          setLoading(false)
       }
     }
   }
 
     return (
-    <div className="min-h-screen flex items-center justify-center p-4 profile-page-container">
-      {/* Container principal centré */}
-      <div className="w-full max-w-6xl mx-auto">
-        <div className="flex rounded-2xl overflow-hidden shadow-2xl linkestiam-profile-container">
-          {/* Sidebar */}
-          <div className="w-80 p-8 linkestiam-sidebar profile-sidebar">
-            {/* Profil utilisateur */}
-            <div className="text-center mb-8">
-              <div className="relative w-20 h-20 mx-auto mb-4">
-                <div className="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden linkestiam-profile-picture">
+    <>
+      <Card 
+        className="border-0 shadow-lg bg-[#F8F7FB] dark:bg-[#1A1A22] border-[#E5E5EA] dark:border-[#333333]"
+        style={{ height: 'calc(100vh - 8rem)' }}
+      >
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div 
+                className="w-14 h-14 rounded-full flex items-center justify-center overflow-hidden border-4 shadow-lg"
+                style={{ backgroundColor: '#8C2CFF', borderColor: 'rgba(140, 44, 255, 0.3)' }}
+              >
                   {formData.profilePicture ? (
                     <img 
                       src={URL.createObjectURL(formData.profilePicture)} 
@@ -256,12 +194,12 @@ export default function ProfilePage() {
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <User className="w-10 h-10 profile-user-name" />
+                  <User className="w-7 h-7 text-white" />
                   )}
                 </div>
-                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center cursor-pointer shadow-lg">
+              <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-white dark:bg-[#1A1A22] rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:scale-110 transition-transform">
                   <label htmlFor="profile-picture" className="cursor-pointer">
-                    <Camera className="w-3 h-3" style={{ color: '#8C2CFF' }} />
+                  <Camera className="w-3 h-3" style={{ color: '#8C2CFF' }} />
                   </label>
                   <input
                     id="profile-picture"
@@ -272,47 +210,59 @@ export default function ProfilePage() {
                   />
                 </div>
               </div>
-              <h1 className="text-xl font-bold mb-1 profile-user-name">
+            
+            <div className="flex-1">
+              <h1 className="text-xl font-semibold flex items-center gap-2 text-[#222222] dark:text-[#F0F0F5]">
                 {formData.firstName && formData.lastName 
                   ? `${formData.firstName} ${formData.lastName}` 
-                  : t('user')}
+                  : t('myProfile')}
+                <BadgeCheck className="w-5 h-5" style={{ color: '#8C2CFF' }} />
+                {hasUnsavedChanges && (
+                  <div className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400">
+                    <AlertTriangle className="w-3 h-3" />
+                    Non sauvegardé
+                  </div>
+                )}
               </h1>
-              <h2 className="text-sm profile-user-subtitle">{t('linkestiamProfile')}</h2>
+              <p className="text-xs mt-1 flex items-center gap-2 text-[#6D6D85]">
+                <Mail className="w-3 h-3" />
+                {formData.email || 'email@linkestiam.com'}
+              </p>
             </div>
-
-            {/* Navigation Menu */}
-            <nav className="space-y-2">
-              <button
-                onClick={() => handleTabChange('profile')}
-                className={`w-full flex items-center px-4 py-3 rounded-lg text-left linkestiam-sidebar-item profile-nav-button ${
-                  activeTab === 'profile' ? 'active' : ''
-                }`}
-              >
-                <User className="w-5 h-5 mr-3" />
-                {t('profile')}
-              </button>
-              <button
-                onClick={() => handleTabChange('settings')}
-                className={`w-full flex items-center px-4 py-3 rounded-lg text-left linkestiam-sidebar-item profile-nav-button ${
-                  activeTab === 'settings' ? 'active' : ''
-                }`}
-              >
-                <Settings className="w-5 h-5 mr-3" />
-                {t('settings')}
-              </button>
-            </nav>
           </div>
-
-          {/* Main Content */}
-          <div className="flex-1 p-8 linkestiam-content profile-content">
-            {activeTab === 'profile' && (
-              <div className="max-w-lg mx-auto linkestiam-form-content">
-                <h2 className="text-3xl font-bold mb-8 text-center profile-title">{t('profile')}</h2>
+        </CardHeader>
+        
+        <Separator className="bg-[#E5E5EA] dark:bg-[#333333]" />
+        
+        <CardContent className="p-6">
+          <div className="max-w-lg mx-auto space-y-5">
+            
+            {/* Avertissement pour modifications non sauvegardées */}
+            {hasUnsavedChanges && (
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  <p className="text-sm text-orange-800 dark:text-orange-200 font-medium">
+                    Vous avez des modifications non sauvegardées
+                  </p>
+                </div>
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
+                                     N&apos;oubliez pas de sauvegarder avant de quitter cette page
+                </p>
+              </div>
+            )}
+            
+            {/* Section Informations personnelles */}
+            <div>
+              <h3 className="text-base font-semibold mb-3 flex items-center gap-2 text-[#222222] dark:text-[#F0F0F5]">
+                <User className="w-4 h-4" style={{ color: '#8C2CFF' }} />
+                {t('personalInfo')}
+              </h3>
                 
-                <div className="space-y-6">
-                  {/* First Name Field */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {/* Prénom */}
                   <div>
-                    <Label htmlFor="firstName" className="text-sm font-medium block mb-2 profile-label">
+                  <Label htmlFor="firstName" className="text-xs font-medium mb-1 text-[#6D6D85]">
                       {t('firstName')}
                     </Label>
                     <Input
@@ -320,14 +270,14 @@ export default function ProfilePage() {
                       type="text"
                       value={formData.firstName}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('firstName', e.target.value)}
-                      placeholder={t('enterFirstName')}
-                      className="w-full profile-input"
+                    placeholder={t('enterFirstName')}
+                    className="w-full border-2 transition-colors focus:ring-0 bg-white dark:bg-[#2A2A38] border-[#E5E5EA] dark:border-[#333333] text-[#222222] dark:text-[#F0F0F5] text-sm"
                     />
                   </div>
 
-                  {/* Last Name Field */}
+                {/* Nom */}
                   <div>
-                    <Label htmlFor="lastName" className="text-sm font-medium block mb-2 profile-label">
+                  <Label htmlFor="lastName" className="text-xs font-medium mb-1 text-[#6D6D85]">
                       {t('lastName')}
                     </Label>
                     <Input
@@ -335,14 +285,15 @@ export default function ProfilePage() {
                       type="text"
                       value={formData.lastName}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('lastName', e.target.value)}
-                      placeholder={t('enterLastName')}
-                      className="w-full profile-input"
+                    placeholder={t('enterLastName')}
+                    className="w-full border-2 transition-colors focus:ring-0 bg-white dark:bg-[#2A2A38] border-[#E5E5EA] dark:border-[#333333] text-[#222222] dark:text-[#F0F0F5] text-sm"
                     />
+                </div>
                   </div>
 
-                  {/* Email Field */}
-                  <div>
-                    <Label htmlFor="email" className="text-sm font-medium block mb-2 profile-label">
+              {/* Email */}
+              <div className="mt-3">
+                <Label htmlFor="email" className="text-xs font-medium mb-1 text-[#6D6D85]">
                       {t('email')}
                     </Label>
                     <Input
@@ -350,15 +301,21 @@ export default function ProfilePage() {
                       type="email"
                       value={formData.email}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('email', e.target.value)}
-                      placeholder={t('enterEmail')}
-                      className="w-full profile-input"
-                    />
-                  </div>
+                placeholder={t('enterEmail')}
+                className="w-full border-2 transition-colors focus:ring-0 bg-white dark:bg-[#2A2A38] border-[#E5E5EA] dark:border-[#333333] text-[#222222] dark:text-[#F0F0F5] text-sm"
+                  />
+                </div>
+            </div>
 
-                  {/* New Password Field */}
+            {/* Section Sécurité */}
+            <div>
+              <h3 className="text-base font-semibold mb-3 text-[#222222] dark:text-[#F0F0F5]">
+                {t('security')}
+              </h3>
+              
                   <div>
-                    <Label htmlFor="newPassword" className="text-sm font-medium block mb-2 profile-label">
-                      {t('newPassword')}
+                <Label htmlFor="newPassword" className="text-xs font-medium mb-1 text-[#6D6D85]">
+                  {t('newPassword')}
                     </Label>
                     <div className="relative">
                       <Input
@@ -366,138 +323,74 @@ export default function ProfilePage() {
                         type={showPassword ? "text" : "password"}
                         value={formData.newPassword}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange('newPassword', e.target.value)}
-                        placeholder={t('enterNewPassword')}
-                        className="w-full pr-10 profile-input"
+                    placeholder={t('enterNewPassword')}
+                    className="w-full pr-10 border-2 transition-colors focus:ring-0 bg-white dark:bg-[#2A2A38] border-[#E5E5EA] dark:border-[#333333] text-[#222222] dark:text-[#F0F0F5] text-sm"
                       />
-                      <button
+                  <Button
                         type="button"
+                    variant="ghost"
+                    size="sm"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0 hover:bg-transparent"
                       >
                         {showPassword ? (
-                          <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-3 h-3 text-[#6D6D85]" />
                         ) : (
-                          <Eye className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Centered Save Button */}
-                  <div className="pt-6 text-center">
-                    <Button
-                      onClick={handleSave}
-                      disabled={loading}
-                      className="px-12 py-3 disabled:opacity-50 linkestiam-button text-lg font-medium"
-                    >
-                      {loading ? t('saving') : t('save')}
+                      <Eye className="w-3 h-3 text-[#6D6D85]" />
+                    )}
                     </Button>
-                  </div>
                 </div>
               </div>
-            )}
-
-            {activeTab === 'settings' && (
-              <div className="max-w-lg mx-auto linkestiam-form-content">
-                <h2 className="text-3xl font-bold mb-8 text-center profile-title">{t('settings')}</h2>
-                
-                <div className="space-y-6">
-                  {/* Send Notifications */}
-                  <div className="flex items-center justify-between py-4 border-b profile-border">
-                    <span className="font-medium text-lg profile-settings-text">{t('notifications')}</span>
-                    <Switch
-                      checked={formData.notifications}
-                      onCheckedChange={(checked) => handleInputChange('notifications', checked)}
-                    />
                   </div>
 
-                  {/* Dark Mode */}
-                  <div className="flex items-center justify-between py-4 border-b profile-border">
-                    <span className="font-medium text-lg profile-settings-text">{t('darkMode')}</span>
-                    <Switch
-                      checked={isDarkMode}
-                      onCheckedChange={(checked) => {
-                        toggleDarkMode(checked)
-                        setHasUnsavedChanges(true)
-                      }}
-                    />
+            {/* Boutons d'action */}
+            <div className="flex flex-col gap-3 pt-4">
+              <Button
+                onClick={handleSave}
+                disabled={loading || !hasUnsavedChanges}
+                className={`w-full py-2.5 text-white font-medium text-base shadow-lg hover:shadow-xl transition-all duration-200 ${
+                  hasUnsavedChanges ? 'animate-pulse' : ''
+                }`}
+                style={{ 
+                  backgroundColor: hasUnsavedChanges ? '#8C2CFF' : '#6D6D85',
+                  transform: hasUnsavedChanges ? 'scale(1.02)' : 'scale(1)'
+                }}
+              >
+                {loading ? t('saving') : t('saveChanges')}
+              </Button>
+              
+              {hasUnsavedChanges && (
+                <p className="text-xs text-center text-orange-600 dark:text-orange-400 font-medium">
+                  ⚠️ {t('unsavedChanges')}
+                </p>
+              )}
                   </div>
 
-                  {/* Language */}
-                  <div className="flex items-center justify-between py-4 border-b profile-border">
-                    <span className="font-medium text-lg profile-settings-text">{t('language')}</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => {
-                          setLanguage('fr')
-                          setHasUnsavedChanges(true)
-                        }}
-                        className={`px-3 py-1 rounded ${language === 'fr' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
-                      >
-                        FR
-                      </button>
-                      <button
-                        onClick={() => {
-                          setLanguage('en')
-                          setHasUnsavedChanges(true)
-                        }}
-                        className={`px-3 py-1 rounded ${language === 'en' ? 'bg-purple-600 text-white' : 'bg-gray-200'}`}
-                      >
-                        EN
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Security */}
-                  <div className="flex items-center justify-between py-4 border-b cursor-pointer settings-hover-item profile-border">
-                    <span className="font-medium text-lg profile-settings-text">{t('security')}</span>
-                    <ChevronRight className="w-5 h-5 profile-icon" />
-                  </div>
-
-                  {/* Theme */}
-                  <div className="flex items-center justify-between py-4 border-b cursor-pointer settings-hover-item profile-border">
-                    <span className="font-medium text-lg profile-settings-text">{t('theme')}</span>
-                    <ChevronRight className="w-5 h-5 profile-icon" />
-                  </div>
-
-                  {/* Centered Buttons */}
-                  <div className="pt-8 text-center">
-                    {/* Delete Account Text - Discret */}
-                    <div className="text-center">
-                      <button
-                        onClick={handleDeleteAccount}
-                        disabled={loading || modalSaving}
-                        className="linkestiam-delete-text disabled:opacity-50"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {t('deleteAccount')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
+            {/* Zone de danger */}
+            <div className="pt-6 border-t border-[#E5E5EA] dark:border-[#333333]">
+              <h3 className="text-base font-semibold mb-2 text-[#222222] dark:text-[#F0F0F5]">
+                {t('dangerZone')}
+              </h3>
+              <p className="text-xs mb-3 text-[#6D6D85]">
+                {t('dangerZoneDescription')}
+              </p>
+              <DeleteAccountDialog 
+                onConfirm={handleDeleteAccount}
+                isLoading={loading}
+              />
               </div>
-            )}
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
-      {/* Modal pour changements non sauvegardés - Navigation externe */}
+      {/* Modal pour les modifications non sauvegardées */}
       <UnsavedChangesModal
-        isOpen={showModal}
-        onSave={handleSaveAndContinue}
-        onDiscard={handleDiscardAndContinue}
-        onCancel={handleCancel}
-        saving={modalSaving}
+        isOpen={unsavedChangesModal.showModal}
+        onSave={unsavedChangesModal.handleSaveAndContinue}
+        onDiscard={unsavedChangesModal.handleDiscardAndContinue}
+        onCancel={unsavedChangesModal.handleCancel}
+        saving={unsavedChangesModal.saving}
       />
-
-      {/* Modal pour changements non sauvegardés - Changement d'onglet */}
-      <UnsavedChangesModal
-        isOpen={showTabModal}
-        onSave={handleTabSaveAndContinue}
-        onDiscard={handleTabDiscardAndContinue}
-        onCancel={handleTabCancel}
-        saving={loading}
-      />
-    </div>
+    </>
     )
 }

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ReactQueryProvider from "@/components/query/ReactQueryProvider";
 import {initializeAgGrid} from "@/lib/agGrid";
@@ -18,20 +17,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LinkESTIAM - Coffre-fort numérique",
-  description: "Application de gestion de documents sécurisée",
+  title: "LinkESTIAM",
+  description: "Plateforme sécurisée de gestion de fichiers LinkESTIAM",
 };
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode
-}) {
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
     <html lang="fr">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <bodyclassName={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <ReactQueryProvider>
         <LanguageProvider>
           <ToastProvider>

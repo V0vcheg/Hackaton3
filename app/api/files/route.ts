@@ -4,7 +4,6 @@ import {_Object, GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutO
 import prisma from "@/lib/prisma";
 import {AppFile} from "@/types/files.types";
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
-import {generateMockFilesForUser} from "@/mockData/files";
 
 
 /**
@@ -85,8 +84,13 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     if (!userId) {
         return NextResponse.json({error: 'User ID is required'}, {status: 400});
     }
-    const mockData =  generateMockFilesForUser(userId);
-    return NextResponse.json(mockData);
+
+    // Retourner une liste vide au lieu des données de test
+    return NextResponse.json({
+        files: [],
+        count: 0
+    });
+
     // Verify user exists
     const user = await prisma.user.findFirst({
         where: {id: userId}
@@ -144,9 +148,9 @@ async function processFiles(s3Files: _Object[]): Promise<AppFile[]> {
             return {
                 key: file.Key,
                 size: file.Size,
-                lastModified: file.LastModified?.toDateString()!,
+                lastModified: file.LastModified?.toDateString() || 'Unknown',
                 type: headResult.ContentType ?? 'application/octet-stream',
-                name: file.Key.split('/').pop()!,
+                name: file.Key.split('/').pop() || 'Unknown',
                 downloadUrl: downloadUrl
             };
         } catch (error) {
@@ -154,9 +158,9 @@ async function processFiles(s3Files: _Object[]): Promise<AppFile[]> {
             return {
                 key: file.Key,
                 size: file.Size,
-                lastModified: file.LastModified?.toDateString()!,
+                lastModified: file.LastModified?.toDateString() || 'Unknown',
                 type: 'application/octet-stream', // Fallback
-                name: file.Key.split('/').pop()!,
+                name: file.Key.split('/').pop() || 'Unknown',
                 downloadUrl: ''
             };
         }

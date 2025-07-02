@@ -1,6 +1,16 @@
 import {FileIcon} from "lucide-react";
 
-export const FileRenderer = (params: any) => {
+interface FileRendererParams {
+    value: string;
+    node: {
+        group: boolean;
+    };
+    data?: {
+        downloadUrl?: string;
+    };
+}
+
+export const FileRenderer = (params: FileRendererParams) => {
     const isFolder = params.node.group;
     const name  = params.value as string;
 
