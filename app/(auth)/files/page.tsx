@@ -1,11 +1,27 @@
-import prisma from "@/lib/prisma";
+import FilesGrid from "@/components/grid/FilesGrid";
+import {UploadDialog} from "@/components/uploader/UploadDialog";
+import {Card, CardContent, CardHeader} from "@/components/ui/card";
+import {Separator} from "@/components/ui/separator";
 
+// Register all Community features
 export default async function FilesPage() {
-    const users = await prisma.user.findMany()
     return (
-        <>
-            <h1>Files Page</h1>
-            <p>Please log in to continue.</p>
-        </>
+        <Card className={'h-full'}>
+            <CardHeader className={"pb-0"}>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h1 className={'text-2xl font-semibold'}>Files</h1>
+                        <p className={'text-muted-foreground text-sm'}>
+                            Upload and manage your files here.
+                        </p>
+                    </div>
+                    <UploadDialog/>
+                </div>
+            </CardHeader>
+            <Separator/>
+            <CardContent className={'h-full p-6 py-0'}>
+                <FilesGrid/>
+            </CardContent>
+        </Card>
     )
 }

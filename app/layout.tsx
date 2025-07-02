@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import ReactQueryProvider from "@/components/query/ReactQueryProvider";
+import {initializeAgGrid} from "@/lib/agGrid";
 import AppToaster from "@/components/ui/toaster";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { ToastProvider } from "@/hooks/useToast";
@@ -30,13 +32,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-
+        <ReactQueryProvider>
         <LanguageProvider>
           <ToastProvider>
-            {children}
+
+          {children}
           </ToastProvider>
         </LanguageProvider>
         <AppToaster />
+      </ReactQueryProvider>
       </body>
     </html>
   );
