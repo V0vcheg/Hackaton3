@@ -14,7 +14,6 @@ type Props = {
   ) => React.ReactNode;
 };
 
-const USER_ID = '1'; // ⚠️ temporaire
 
 export default function PassphraseGate({ children }: Props) {
   const [pass, setPass] = React.useState('');
@@ -26,7 +25,12 @@ export default function PassphraseGate({ children }: Props) {
   React.useEffect(() => {
     (async () => {
       try {
-        const rows = await listPasswordEntries(USER_ID);
+          const token = localStorage.getItem('token');
+          if (!token) throw new Error('Token JWT non trouvé dans les cookies');
+            const decodedToken = JSON.parse(atob(token.split('.')[1])) as { userId: string };
+            const userId = decodedToken.userId;
+            console.log('User ID from token:', userId);
+        const rows = await listPasswordEntries(userId);
         setFirstTime(rows.length === 0);
       } catch (err) {
         console.error('Impossible de vérifier la première utilisation', err);
