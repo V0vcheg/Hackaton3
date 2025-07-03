@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+import {NextRequest, NextResponse} from "next/server";
 import { prisma } from "@/lib/prisma";
+import jwt from "jsonwebtoken";
 
 //! NEED TO IMPLEMENT AUTHENTICATION WITH JWT SO THE USER CAN ONLY CREATE PASSWORD ENTRIES FOR THEMSELVES
 /**
@@ -16,17 +17,19 @@ import { prisma } from "@/lib/prisma";
  * // GET /api/password-entries?userId=1
  * // Returns: [{...}, {...}]
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const userIdParam = searchParams.get("userId");
-
-  const userId = Number(userIdParam);
-  if (!userIdParam || Number.isNaN(userId)) {
+  const token = request.cookies.get("token")?.value!;
+  const decodedToken = jwt.decode(token, {complete: true}) as { payload: { userId: string } } | null;
+  // Get userId from the URL search params
+  const userId = Number(decodedToken?.payload.userId);
+/*  if (!userIdParam || Number.isNaN(userId)) {
     return NextResponse.json(
       { error: "userId query param required (e.g. ?userId=1)" },
       { status: 400 }
     );
-  }
+  }*/
 
   const entries = await prisma.passwordEntry.findMany({
     where: { userId: userIdParam as string },

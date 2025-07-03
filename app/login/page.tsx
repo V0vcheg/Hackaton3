@@ -234,6 +234,10 @@ export default function LoginPage() {
 
             // Connexion réussie => stockage du JWT
             localStorage.setItem("token", data.token)
+            //set cookie with jwt
+
+
+
             router.push("/profile")
         } catch (err) {
             setError("Erreur serveur.")
@@ -310,7 +314,7 @@ export default function LoginPage() {
                 {!twoFactorRequired && (
                     <p className="mt-6 text-muted-foreground">
                         Pas encore de compte ?{" "}
-                        <a href="/auth/register" className="text-primary font-semibold hover:underline">
+                        <a href="/register" className="text-primary font-semibold hover:underline">
                             Inscrivez-vous
                         </a>
                     </p>

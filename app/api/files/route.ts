@@ -5,6 +5,7 @@ import prisma from "@/lib/prisma";
 import {AppFile} from "@/types/files.types";
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
 import {generateMockFilesForUser, mockFilesData} from "@/mockData/files";
+import jwt from "jsonwebtoken";
 
 
 /**
@@ -78,9 +79,11 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
 
+    //get token from request cookies
+    const token = request.cookies.get('token')?.value!;
+    const decodedToken = jwt.decode(token, {complete: true}) as { payload: { userId: string } } | null;
     // Get userId from the URL search params
-    const {searchParams} = new URL(request.url);
-    const userId = searchParams.get('userId');
+    const userId = decodedToken?.payload.userId;
 
     if (!userId) {
         return NextResponse.json({error: 'User ID is required'}, {status: 400});
@@ -93,35 +96,35 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         files: files,
         count: files.length
     });
-/*
-    // Verify user exists
-    const user = await prisma.user.findFirst({
-        where: {id: userId}
-    });
-
-    if (!user) {
-        return NextResponse.json({error: 'User not found'}, {status: 404});
-    }
-
-    try {
-        const command = new ListObjectsV2Command({
-            Bucket: Bucket,
-            Prefix: `files/${userId}/`,
+    /*
+        // Verify user exists
+        const user = await prisma.user.findFirst({
+            where: {id: userId}
         });
 
-        const response = await s3Client.send(command);
+        if (!user) {
+            return NextResponse.json({error: 'User not found'}, {status: 404});
+        }
 
-        // Transform the response to include only relevant file information
-        const files = await processFiles(response.Contents ?? []);
+        try {
+            const command = new ListObjectsV2Command({
+                Bucket: Bucket,
+                Prefix: `files/${userId}/`,
+            });
 
-        return NextResponse.json({
-            files,
-            count: files.length
-        });
-    } catch (error) {
-        console.error('Error listing files:', error);
-        return NextResponse.json({error: 'Error retrieving files'}, {status: 500});
-    }*/
+            const response = await s3Client.send(command);
+
+            // Transform the response to include only relevant file information
+            const files = await processFiles(response.Contents ?? []);
+
+            return NextResponse.json({
+                files,
+                count: files.length
+            });
+        } catch (error) {
+            console.error('Error listing files:', error);
+            return NextResponse.json({error: 'Error retrieving files'}, {status: 500});
+        }*/
 }
 
 async function processFiles(s3Files: _Object[]): Promise<AppFile[]> {
