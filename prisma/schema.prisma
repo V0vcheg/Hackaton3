@@ -15,21 +15,32 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  password  String?
+  id              String          @id @default(uuid())
+  email           String          @unique
+  name            String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  password        String?
+  twoFactor       Boolean         @default(false)
+  tfSecret        String?
+  sessions        Session[]
   passwordEntries PasswordEntry[]
 }
 
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expires      DateTime
+}
+
 model PasswordEntry {
-  id          String  @id @default(uuid())
-  userId      String
-  user        User    @relation(fields: [userId], references: [id])
-  iniVector   String  @db.VarChar(16)
-  cipherData  String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  iniVector  String   @db.VarChar(16)
+  cipherData String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
