@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation"
 export default function RegisterPage() {
   const [form, setForm] = useState({ name: "", email: "", password: "" })
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -15,6 +16,7 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+    setError("")
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -26,10 +28,9 @@ export default function RegisterPage() {
     setLoading(false)
 
     if (data.success) {
-      alert("Inscription réussie ! Vous pouvez vous connecter.")
-      router.push("/auth/login")
+      router.push("/profile") // Redirection vers le profil après inscription réussie
     } else {
-      alert(data.message)
+      setError(data.message || "Erreur lors de l'inscription.")
     }
   }
 
@@ -65,6 +66,7 @@ export default function RegisterPage() {
             className="w-full p-3 rounded-md bg-input border border-border"
             required
           />
+
           <button
             type="submit"
             className="w-full py-3 rounded-md bg-primary text-white font-semibold"
@@ -72,7 +74,12 @@ export default function RegisterPage() {
           >
             {loading ? "Chargement..." : "S’inscrire"}
           </button>
+
+          {error && (
+            <p className="text-red-600">{error}</p>
+          )}
         </form>
+
         <p className="mt-6 text-muted-foreground">
           Vous avez déjà un compte ?{" "}
           <a href="/auth/login" className="text-primary font-semibold hover:underline">
@@ -80,6 +87,7 @@ export default function RegisterPage() {
           </a>
         </p>
       </section>
+
       <section className="w-1/2 bg-sidebar flex justify-center items-center">
         <div className="text-6xl font-extrabold text-sidebar-foreground select-none">
           🛡️

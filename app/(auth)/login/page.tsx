@@ -220,15 +220,12 @@ export default function LoginPage() {
     }
 
     if (data.twoFactorRequired) {
-      // Redirige vers page 2FA avec userId en query string
+      // Redirige vers la page de vérification 2FA
       router.push(`/2fa/verify?userId=${data.userId}`)
       return
     }
 
-    // Login ok, sessionToken reçu
-    // Stocker token (exemple: localStorage ou cookie selon implémentation)
-    localStorage.setItem('sessionToken', data.sessionToken)
-
+    // Connexion réussie
     router.push('/profile')
   }
 
@@ -237,31 +234,56 @@ export default function LoginPage() {
       <section className="w-1/2 flex flex-col justify-center items-start p-16 bg-card text-card-foreground">
         <h1 className="text-4xl font-bold mb-4">MonSite</h1>
         <p className="text-muted-foreground mb-10">Votre espace sécurisé</p>
+
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
-          <label htmlFor="email" className="block mb-2 text-muted-foreground font-medium">Email</label>
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-red-100 text-red-700">
+              {error}
+            </div>
+          )}
+
+          <label htmlFor="email" className="block mb-2 text-muted-foreground font-medium">
+            Email
+          </label>
           <input
-            id="email" type="email" required
-            value={email} onChange={e => setEmail(e.target.value)}
+            id="email"
+            type="email"
+            required
+            value={email}
+            onChange={e => setEmail(e.target.value)}
             className="w-full mb-6 p-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="exemple@mail.com"
           />
-          <label htmlFor="password" className="block mb-2 text-muted-foreground font-medium">Mot de passe</label>
+
+          <label htmlFor="password" className="block mb-2 text-muted-foreground font-medium">
+            Mot de passe
+          </label>
           <input
-            id="password" type="password" required
-            value={password} onChange={e => setPassword(e.target.value)}
+            id="password"
+            type="password"
+            required
+            value={password}
+            onChange={e => setPassword(e.target.value)}
             className="w-full mb-6 p-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="••••••••"
           />
-          <button type="submit" className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:brightness-110 transition">
+
+          <button
+            type="submit"
+            className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:brightness-110 transition"
+          >
             Se connecter
           </button>
-          {error && <p className="mt-2 text-red-600">{error}</p>}
         </form>
+
         <p className="mt-6 text-muted-foreground">
           Pas encore de compte ?{" "}
-          <a href="/auth/register" className="text-primary font-semibold hover:underline">Inscrivez-vous</a>
+          <a href="/auth/register" className="text-primary font-semibold hover:underline">
+            Inscrivez-vous
+          </a>
         </p>
       </section>
+
       <section className="w-1/2 bg-sidebar flex justify-center items-center" aria-label="Logo">
         <div className="text-6xl font-extrabold text-sidebar-foreground select-none">🗂️</div>
       </section>
