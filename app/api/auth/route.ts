@@ -1,10 +1,4 @@
-import { type NextRequest } from 'next/server'
-
-type ResponseData = {
-    message: string
-}
-
-export function GET(request: NextRequest) {
+export function GET() {
    /* res.status(200).json({ message: 'Hello from Next.js!' })*/
     // query is "hello" for /api/search?query=hello
     return new Response(

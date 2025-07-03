@@ -6,8 +6,6 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -76,6 +74,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --linkestiam-primary: #8C2CFF;
+  --linkestiam-background: #1A1A22;
+  --linkestiam-sidebar: #2A1E3F;
+  --linkestiam-content: #F8F7FB;
+  --linkestiam-input: #2A2A38;
+  --linkestiam-border: #333333;
+  --linkestiam-text-light: #F0F0F5;
+  --linkestiam-text-dark: #222222;
+  --linkestiam-text-secondary: #6D6D85;
 }
 
 .dark {
@@ -110,6 +117,14 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --linkestiam-background: #0F0F13;
+  --linkestiam-sidebar: #1A1520;
+  --linkestiam-content: #1E1E1E;
+  --linkestiam-input: #2A2A38;
+  --linkestiam-border: #404040;
+  --linkestiam-text-light: #F0F0F5;
+  --linkestiam-text-dark: #F0F0F5;
+  --linkestiam-text-secondary: #B0B0B5;
 }
 
 @layer base {
@@ -119,4 +134,200 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Couleurs LinkESTIAM pour cohérence */
+:root {
+  --linkestiam-primary: #8C2CFF;
+  --linkestiam-background: #1A1A22;
+  --linkestiam-sidebar: #2A1E3F;
+  --linkestiam-content: #F8F7FB;
+  --linkestiam-input: #2A2A38;
+  --linkestiam-border: #333333;
+  --linkestiam-text-light: #F0F0F5;
+  --linkestiam-text-dark: #222222;
+  --linkestiam-text-secondary: #6D6D85;
+  --linkestiam-separator: #E5E5EA;
+}
+
+/* Force les couleurs violettes foncées pour la sidebar */
+[data-sidebar] {
+  background-color: #6D28D9 !important;
+  background: #6D28D9 !important;
+}
+
+.dark [data-sidebar] {
+  background-color: #1A1A22 !important;
+  background: #1A1A22 !important;
+  
+  /* Protection globale contre l'autocomplete */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #2A2A38 inset !important;
+    -webkit-text-fill-color: #F0F0F5 !important;
+    background-color: #2A2A38 !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+  
+  /* Mode sombre - Protection globale autocomplete */
+  .dark input:-webkit-autofill,
+  .dark input:-webkit-autofill:hover,
+  .dark input:-webkit-autofill:focus,
+  .dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #2A2A38 inset !important;
+    -webkit-text-fill-color: #F0F0F5 !important;
+    background-color: #2A2A38 !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+}
+
+/* Styles personnalisés LinkESTIAM */
+.linkestiam-button {
+  background-color: #8C2CFF;
+  color: #F0F0F5;
+  transition: background-color 0.2s ease;
+}
+
+.linkestiam-button:hover {
+  background-color: #7A25E6;
+}
+
+.linkestiam-sidebar-item {
+  transition: all 0.2s ease;
+}
+
+.linkestiam-sidebar-item:hover:not(.active) {
+  background-color: rgba(140, 44, 255, 0.2) !important;
+  color: #F0F0F5 !important;
+}
+
+.linkestiam-sidebar-item.active {
+  background-color: #8C2CFF !important;
+  color: #F0F0F5 !important;
+}
+
+.linkestiam-delete-text {
+  color: #6D6D85;
+  font-style: italic;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  background: none;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.linkestiam-delete-text:hover {
+  color: #8C2CFF;
+  text-decoration: underline;
+}
+
+/* Mode sombre - Bouton supprimer compte */
+.dark .linkestiam-delete-text {
+  color: var(--linkestiam-text-secondary);
+}
+
+.dark .linkestiam-delete-text:hover {
+  color: #8C2CFF;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .linkestiam-profile-container {
+    flex-direction: column !important;
+    max-width: 100% !important;
+    margin: 1rem !important;
+  }
+  
+  .linkestiam-sidebar {
+    width: 100% !important;
+    padding: 1.5rem !important;
+  }
+  
+  .linkestiam-content {
+    padding: 1.5rem !important;
+  }
+  
+  .linkestiam-sidebar .text-center {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1rem;
+    text-align: left;
+  }
+  
+  .linkestiam-sidebar .text-center .relative {
+    margin: 0 !important;
+    flex-shrink: 0;
+  }
+  
+  .linkestiam-sidebar nav {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .linkestiam-sidebar nav button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .linkestiam-profile-container {
+    margin: 0.5rem !important;
+  }
+  
+  .linkestiam-form-content {
+    max-width: 100% !important;
+  }
+}
+
+/* Composant ProfileButton */
+.profile-button-default {
+  background: rgba(45, 30, 63, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(140, 44, 255, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.profile-button-default:hover {
+  @apply bg-purple-900/95 border-purple-500/60 -translate-y-0.5 shadow-xl shadow-purple-500/20;
+}
+
+.profile-button-compact {
+  background: rgba(45, 30, 63, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(140, 44, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  color: #F0F0F5;
+}
+
+.profile-button-compact:hover {
+  background: rgba(45, 30, 63, 0.95);
+  border-color: rgba(140, 44, 255, 0.6);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(140, 44, 255, 0.15);
+}
+
+.profile-button-icon {
+  @apply bg-transparent border-none cursor-pointer transition-all duration-300 rounded-full;
+}
+
+.profile-button-icon:hover {
+  @apply scale-110 shadow-lg shadow-purple-500/30;
 }

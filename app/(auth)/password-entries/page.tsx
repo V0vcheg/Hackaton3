@@ -3,6 +3,7 @@
 import * as React from 'react';
 import { toast } from 'sonner';
 import { Plus } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
 
 import PassphraseGate from '@/components/password-entries/passphraseGate';
 import PasswordEntryTable from '@/components/password-entries/passwordEntryTable';
@@ -92,15 +93,20 @@ function EntriesUI({
   }
 
   return (
-    <main className="p-8 max-w-4xl mx-auto">
+    <Card 
+      className="border-0 shadow-lg bg-[#F8F7FB] dark:bg-[#1A1A22] border-[#E5E5EA] dark:border-[#333333]"
+      style={{ height: 'calc(100vh - 8rem)' }}
+    >
+      <CardHeader>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Mes mots de passe</h1>
         <Button onClick={handleAdd}>
-          <Plus className="w-4 h-4 mr-2" />
-          Ajouter
+        <Plus className="w-4 h-4 mr-2" />
+        Ajouter
         </Button>
       </div>
-
+      </CardHeader>
+      <CardContent>
       <PasswordEntryTable
         entries={entries}
         keyAES={keyAES}
@@ -110,11 +116,12 @@ function EntriesUI({
       <PasswordEntryDialog
         open={dialogOpen}
         initial={
-          editing ? decryptEntry(editing, keyAES) : undefined
+        editing ? decryptEntry(editing, keyAES) : undefined
         }
         onClose={() => setDialogOpen(false)}
         onSubmit={submitDraft}
       />
-    </main>
+      </CardContent>
+    </Card>
   );
 }
