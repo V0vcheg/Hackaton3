@@ -1,27 +1,27 @@
 'use client';
 
-import { AgGridReact, AgGridReactProps } from "ag-grid-react";
-import { AppFile } from "@/types/files.types";
-import { useQuery } from "@tanstack/react-query";
-import { api } from "@/lib/api";
-import { toast } from "sonner";
-import { FilesCols } from "@/components/grid/FilesCols";
-import { useMemo, useEffect, useRef } from "react";
+import {AgGridReact, AgGridReactProps} from "ag-grid-react";
+import {AppFile} from "@/types/files.types";
+import {useQuery} from "@tanstack/react-query";
+import {api} from "@/lib/api";
+import {toast} from "sonner";
+import {FilesCols} from "@/components/grid/FilesCols";
+import {useMemo, useEffect, useRef} from "react";
 import {GridApi, themeQuartz} from "ag-grid-community";
 import {FileRenderer} from "@/components/grid/FileRenderer";
 import {initializeAgGrid} from "@/lib/agGrid";
 import {Button} from "@/components/ui/button";
-import { useDarkMode } from "@/hooks/useDarkMode";
-import { useLanguage } from "@/hooks/useLanguage";
+import {useDarkMode} from "@/hooks/useDarkMode";
+import {useLanguage} from "@/hooks/useLanguage";
 
 export default function FilesGrid() {
     initializeAgGrid()
     const gridApiRef = useRef<GridApi | null>(null);
-    const { isDarkMode } = useDarkMode();
-    const { t } = useLanguage();
+    const {isDarkMode} = useDarkMode();
+    const {t} = useLanguage();
     const userId = '12345'; // TODO : Replace with actual user ID logic
 
-    const { data: filesResponse, isFetching, isError, error } = useQuery<{files: AppFile[], count: number}>({
+    const {data: filesResponse, isFetching, isError, error} = useQuery<{ files: AppFile[], count: number }>({
         queryKey: ['files'],
         retry: false,
         staleTime: 1000 * 60 * 5, // 5 minutes
@@ -110,7 +110,7 @@ export default function FilesGrid() {
                 <Button
                     onClick={() => gridApiRef.current?.expandAll()}
                     className="text-white font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-                    style={{ backgroundColor: '#8C2CFF' }}
+                    style={{backgroundColor: '#8C2CFF'}}
                 >
                     {t('expandAll')}
                 </Button>
@@ -122,7 +122,7 @@ export default function FilesGrid() {
                     {t('collapseAll')}
                 </Button>
             </div>
-            <div 
+            <div
                 className="ag-theme-quartz w-full h-full"
                 style={{
                     '--ag-background-color': isDarkMode ? '#1A1A22' : '#F8F7FB',
