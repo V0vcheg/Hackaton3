@@ -25,13 +25,13 @@ export default function PasswordEntryTable({
   }
 
   return (
-    <table className="w-full border-collapse mt-4 text-center">
+    <table className="w-full border-collapse mt-4 text-center border-0 shadow-lg bg-[#F8F7FB] dark:bg-[#1A1A22] border-[#E5E5EA] dark:border-[#333333]">
       <thead>
-        <tr className="bg-gray-100">
-          <th className="border p-2">Login</th>
-          <th className="border p-2">Mot&nbsp;de&nbsp;passe</th>
-          <th className="border p-2">Site</th>
-          <th className="border p-2">Actions</th>
+        <tr className="bg-gray-100 dark:bg-[#23232b]">
+          <th className="border p-2 border-[#E5E5EA] dark:border-[#333333]">Login</th>
+          <th className="border p-2 border-[#E5E5EA] dark:border-[#333333]">Mot&nbsp;de&nbsp;passe</th>
+          <th className="border p-2 border-[#E5E5EA] dark:border-[#333333]">Site</th>
+          <th className="border p-2 border-[#E5E5EA] dark:border-[#333333]">Actions</th>
         </tr>
       </thead>
 

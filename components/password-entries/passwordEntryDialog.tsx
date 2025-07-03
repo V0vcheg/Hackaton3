@@ -44,7 +44,9 @@ export default function PasswordEntryDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        className="sm:max-w-md border-0 shadow-lg bg-[#F8F7FB] dark:bg-[#1A1A22] border-[#E5E5EA] dark:border-[#333333]"
+      >
         <DialogHeader>
           <DialogTitle>
             {initial ? 'Modifier' : 'Ajouter'} un mot de passe

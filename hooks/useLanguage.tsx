@@ -17,6 +17,7 @@ const translations = {
     settings: 'Paramètres',
     fileManager: 'Gestionnaire de fichiers',
     myProfile: 'Mon profil',
+    passwordEntries: 'Gestionnaire de mots de passe',
     
     // Profile page
     firstName: 'Prénom',
@@ -105,7 +106,7 @@ const translations = {
     settings: 'Settings',
     fileManager: 'File Manager',
     myProfile: 'My Profile',
-    
+    passwordEntries: 'Password Manager',
     // Profile page
     firstName: 'First Name',
     lastName: 'Last Name',

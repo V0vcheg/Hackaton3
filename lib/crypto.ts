@@ -1,7 +1,9 @@
 import CryptoJS from "crypto-js";
 import { PlainPasswordEntry, EncryptedPasswordEntry } from "@/types/password.types";
 
-const CONST_SALT = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SALT as string);
+const CONST_SALT = CryptoJS.enc.Hex.parse(
+  process.env.NEXT_PUBLIC_CONST_SALT as string
+);
 
 /**
  * Derives a cryptographic key from a given passphrase using PBKDF2.

@@ -1,11 +1,12 @@
 'use client';
 import React from 'react'
 import {Sidebar, SidebarContent, SidebarFooter, SidebarHeader} from "@/components/ui/sidebar";
-import {Files, User, Settings} from "lucide-react";
+import {Files, User, Settings, Key} from "lucide-react";
 import {usePathname, useRouter} from "next/navigation";
 import {Separator} from "@/components/ui/separator";
 import {useLanguage} from "@/hooks/useLanguage";
 import Image from 'next/image';
+import PasswordEntriesPage from '@/app/(auth)/password-entries/page';
 
 // Fonction globale pour vérifier les modifications
 declare global {
@@ -22,6 +23,7 @@ export function AppSidebar() {
     const menuItems = [
         { icon: Files, label: t('fileManager'), href: '/files' },
         { icon: User, label: t('myProfile'), href: '/profile' },
+        { icon: Key, label: t('passwordEntries'), href: '/password-entries' },
         { icon: Settings, label: t('settings'), href: '/settings' },
     ]
 

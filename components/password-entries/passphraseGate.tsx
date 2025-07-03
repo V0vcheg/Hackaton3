@@ -80,10 +80,10 @@ export default function PassphraseGate({ children }: Props) {
 
   if (!validated || !key) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F7FB] dark:bg-[#1A1A22] px-4">
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md border"
+          className="border-0 shadow-lg rounded-xl p-6 w-full max-w-md bg-[#F8F7FB] dark:bg-[#1A1A22] border-[#E5E5EA] dark:border-[#333333]"
         >
           <h2 className="text-xl font-semibold mb-4 text-center">
             Déverrouillage
