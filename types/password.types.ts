@@ -6,7 +6,7 @@ export interface PlainPasswordEntry {
 
 export interface EncryptedPasswordEntry {
   id?:        string
-  iv:         string
+  iniVector:         string
   cipherData: string
   createdAt?: string
   updatedAt?: string

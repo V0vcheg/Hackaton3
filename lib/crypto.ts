@@ -1,10 +1,7 @@
 import CryptoJS from "crypto-js";
-import dotenv from "dotenv";
-import { PlainPasswordEntry, EncryptedPasswordEntry } from "@/types/password";
+import { PlainPasswordEntry, EncryptedPasswordEntry } from "@/types/password.types";
 
-dotenv.config();
-
-const CONST_SALT = CryptoJS.enc.Hex.parse(process.env.CONST_SALT as string);
+const CONST_SALT = CryptoJS.enc.Hex.parse(process.env.NEXT_PUBLIC_SALT as string);
 
 /**
  * Derives a cryptographic key from a given passphrase using PBKDF2.
@@ -41,9 +38,9 @@ export function encryptEntry(
 ): EncryptedPasswordEntry {
   const iv = CryptoJS.lib.WordArray.random(16); // 16 octets
   const cipher = CryptoJS.AES.encrypt(JSON.stringify(plain), key, { iv });
-
+console.log('🧪 IV généré :', iv.toString(CryptoJS.enc.Hex));
   return {
-    iv: iv.toString(CryptoJS.enc.Hex),
+    iniVector: iv.toString(CryptoJS.enc.Hex),
     cipherData: cipher.ciphertext.toString(CryptoJS.enc.Base64),
   };
 }
@@ -61,13 +58,19 @@ export function encryptEntry(
  * - Le résultat est désérialisé depuis une chaîne JSON.
  */
 export function decryptEntry(
-  enc: EncryptedPasswordEntry,
-  key: CryptoJS.lib.WordArray
-): PlainPasswordEntry {
-  const bytes = CryptoJS.AES.decrypt(
-    { ciphertext: CryptoJS.enc.Base64.parse(enc.cipherData) } as any,
-    key,
-    { iv: CryptoJS.enc.Hex.parse(enc.iv) }
-  );
-  return JSON.parse(CryptoJS.enc.Utf8.stringify(bytes));
+  entry: { iniVector: string; cipherData: string },
+  key: CryptoJS.lib.WordArray,
+) {
+  // ← IMPORTANT : on parse le IV depuis l’HEX stocké en BDD
+  const iv = CryptoJS.enc.Hex.parse(entry.iniVector);
+
+  const decrypted = CryptoJS.AES.decrypt(entry.cipherData, key, { iv });
+  const plaintext = decrypted.toString(CryptoJS.enc.Utf8);
+
+  if (!plaintext) {
+    // CryptoJS renvoie une chaîne vide si la clé / l’IV sont faux
+    throw new Error('Decryption failed – empty plaintext');
+  }
+
+  return JSON.parse(plaintext) as { site: string; login: string; pwd: string };
 }
