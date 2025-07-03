@@ -191,42 +191,55 @@
 //   )
 // }
 
-'use client'
+"use client"
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const router = useRouter()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
+
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [otp, setOtp] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [twoFactorRequired, setTwoFactorRequired] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
+    setError("")
+    setLoading(true)
 
-    const res = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    })
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, otp: twoFactorRequired ? otp : undefined }),
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!data.success) {
-      setError(data.message || "Erreur lors de la connexion.")
-      return
+      if (!data.success) {
+        // Si le serveur demande le 2FA, on bascule l'UI
+        if (data.twoFactorRequired) {
+          setTwoFactorRequired(true)
+          setError("")
+        } else {
+          setError(data.message || "Erreur lors de la connexion.")
+        }
+        setLoading(false)
+        return
+      }
+
+      // Connexion réussie => stockage du JWT
+      localStorage.setItem("token", data.token)
+      router.push("/auth/profile")
+    } catch (err) {
+      setError("Erreur serveur.")
+    } finally {
+      setLoading(false)
     }
-
-    if (data.twoFactorRequired) {
-      // Redirige vers la page de vérification 2FA
-      router.push(`/2fa/verify?userId=${data.userId}`)
-      return
-    }
-
-    // Connexion réussie
-    router.push('/profile')
   }
 
   return (
@@ -237,9 +250,7 @@ export default function LoginPage() {
 
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
           {error && (
-            <div className="mb-4 p-3 rounded-md bg-red-100 text-red-700">
-              {error}
-            </div>
+            <div className="mb-4 p-3 rounded-md bg-red-100 text-red-700">{error}</div>
           )}
 
           <label htmlFor="email" className="block mb-2 text-muted-foreground font-medium">
@@ -250,9 +261,10 @@ export default function LoginPage() {
             type="email"
             required
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full mb-6 p-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="exemple@mail.com"
+            disabled={twoFactorRequired} // Ne plus pouvoir modifier email/password si on attend 2FA
           />
 
           <label htmlFor="password" className="block mb-2 text-muted-foreground font-medium">
@@ -263,25 +275,46 @@ export default function LoginPage() {
             type="password"
             required
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full mb-6 p-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="••••••••"
+            disabled={twoFactorRequired}
           />
+
+          {twoFactorRequired && (
+            <>
+              <label htmlFor="otp" className="block mb-2 text-muted-foreground font-medium">
+                Code de vérification (2FA)
+              </label>
+              <input
+                id="otp"
+                type="text"
+                required
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                className="w-full mb-6 p-3 rounded-md bg-input border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                placeholder="123456"
+              />
+            </>
+          )}
 
           <button
             type="submit"
-            className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:brightness-110 transition"
+            disabled={loading}
+            className="w-full py-3 rounded-md bg-primary text-primary-foreground font-semibold hover:brightness-110 transition disabled:opacity-50"
           >
-            Se connecter
+            {loading ? "Connexion..." : twoFactorRequired ? "Valider le code" : "Se connecter"}
           </button>
         </form>
 
-        <p className="mt-6 text-muted-foreground">
-          Pas encore de compte ?{" "}
-          <a href="/auth/register" className="text-primary font-semibold hover:underline">
-            Inscrivez-vous
-          </a>
-        </p>
+        {!twoFactorRequired && (
+          <p className="mt-6 text-muted-foreground">
+            Pas encore de compte ?{" "}
+            <a href="/auth/register" className="text-primary font-semibold hover:underline">
+              Inscrivez-vous
+            </a>
+          </p>
+        )}
       </section>
 
       <section className="w-1/2 bg-sidebar flex justify-center items-center" aria-label="Logo">
