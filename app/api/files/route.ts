@@ -4,6 +4,7 @@ import {_Object, GetObjectCommand, HeadObjectCommand, ListObjectsV2Command, PutO
 import prisma from "@/lib/prisma";
 import {AppFile} from "@/types/files.types";
 import {getSignedUrl} from "@aws-sdk/s3-request-presigner";
+import {generateMockFilesForUser, mockFilesData} from "@/mockData/files";
 
 
 /**
@@ -85,12 +86,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         return NextResponse.json({error: 'User ID is required'}, {status: 400});
     }
 
+    const files = generateMockFilesForUser(userId);
+
     // Retourner une liste vide au lieu des données de test
     return NextResponse.json({
-        files: [],
-        count: 0
+        files: files,
+        count: files.length
     });
-
+/*
     // Verify user exists
     const user = await prisma.user.findFirst({
         where: {id: userId}
@@ -118,7 +121,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     } catch (error) {
         console.error('Error listing files:', error);
         return NextResponse.json({error: 'Error retrieving files'}, {status: 500});
-    }
+    }*/
 }
 
 async function processFiles(s3Files: _Object[]): Promise<AppFile[]> {
