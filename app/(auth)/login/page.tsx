@@ -245,7 +245,7 @@ export default function LoginPage() {
   return (
     <main className="flex h-screen bg-background text-foreground">
       <section className="w-1/2 flex flex-col justify-center items-start p-16 bg-card text-card-foreground">
-        <h1 className="text-4xl font-bold mb-4">MonSite</h1>
+        <h1 className="text-4xl font-bold mb-4">LinkEstiam</h1>
         <p className="text-muted-foreground mb-10">Votre espace sécurisé</p>
 
         <form onSubmit={handleSubmit} className="w-full max-w-sm">
